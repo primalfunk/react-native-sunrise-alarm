@@ -1,9 +1,12 @@
 import React, { Component } from 'react'
-import { Button, StyleSheet, Text, View } from 'react-native'
+import { Button, Linking, StyleSheet, Text, View } from 'react-native'
+import axios from 'react-native-axios'
+import moment from 'moment'
+
 import Permissions from 'react-native-permissions'
 
 export default class App extends Component {
-  state = { permission: '', lat: '', long: '', alt: '' }
+  state = { permission: '', lat: '', long: '', alt: '', sunrise: '', today: moment().format() }
 
   componentDidMount() {
     Permissions.request('location').then( response => {
@@ -22,6 +25,15 @@ export default class App extends Component {
     )
   }
   
+  getSunriseTime = ( lat, long ) => {
+    let setdate = moment(new Date()).add(1, 'days')
+    let tomorrow = moment(setdate).format('YYYY-MM-DD')
+    axios.get(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${long}&date=${tomorrow}`)
+      .then( res => {
+          this.setState({ sunrise: res.data.results.sunrise })
+    })
+  }
+
   getLocation = () => {
     navigator.geolocation.getCurrentPosition(
       ( position ) => {
@@ -35,16 +47,29 @@ export default class App extends Component {
   }
 
   render() {
-    const { lat, long, alt } = this.state
+    const { lat, long, alt, sunrise } = this.state
+    let offsetInHours = new Date().getTimezoneOffset() / 60
+    let setdate = moment( new Date() ).add(1, 'days')
+    let datestr = moment( setdate ).format("YYYY-MM-DD")
+    if ( sunrise !== '' ) {
+      let mystr = `${datestr} ${sunrise}`
+      let mytime = moment( mystr, 'YYYY-MM-DD hh:mm:ss A')
+      mytime = moment( mytime ).subtract(offsetInHours, 'hours')
+      setdate = moment( mytime ).format('YYYY-MM-DD hh:mm:ss A')
+      //then go ahead and set up the alarm clock
+    }
     return (
       <View style={ styles.container }>
-        <Text style={ styles.welcome }>Welcome to my Location Finder!</Text>
-        <Button title="Press to update location" onPress={ () => this.getLocation() }/>
-        <Text>{ lat !== '' ? 
-          `Latitude: ${Number(lat).toFixed(2)}, longitude: ${Number(long).toFixed(2)}, altitude: ${ Number(alt).toFixed(2) }`
-          : 
-          `No position found.`}
+        <Text style={ styles.welcome }>Sunrise alarm</Text>
+        <Text style={{ color: 'blue' }}
+          onPress={() => Linking.openURL('http://sunrise-sunset.org')}>
+          Using Sunrise-sunset.org's API
         </Text>
+        <Button title="Get sunrise time" onPress={() => this.getSunriseTime(Number(lat).toFixed(7), Number(long).toFixed(7) ) } />
+        { sunrise !== '' ?
+        <Text>{`Sunrise time to set: ${ setdate }`}</Text>
+        : null  
+      }
       </View>
     )
   }
