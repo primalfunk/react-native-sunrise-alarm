@@ -4158,6 +4158,10 @@ react-native-permissions@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/react-native-permissions/-/react-native-permissions-1.1.1.tgz#4876004681ff8556454613d85249b01baff9b35b"
 
+react-native-push-notification@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/react-native-push-notification/-/react-native-push-notification-3.1.1.tgz#99ce426e78e95788c298f73750cc4e68db04d7ab"
+
 react-native@0.56.0:
   version "0.56.0"
   resolved "https://registry.yarnpkg.com/react-native/-/react-native-0.56.0.tgz#66686f781ec39a44376aadd4bbc55c8573ab61e5"
