@@ -1,18 +1,58 @@
 import React, { Component } from 'react'
-import { Button, Linking, StyleSheet, Text, View } from 'react-native'
+import { AppState, Button, Linking, StyleSheet, Text, View, Picker } from 'react-native'
 import axios from 'react-native-axios'
 import Example from '../myLocation/components/Example.js'
 import moment from 'moment'
-
+import PushController from '../myLocation/components/PushController.js'
+import PushNotification from 'react-native-push-notification'
 import Permissions from 'react-native-permissions'
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignContent: 'space-between',
+    backgroundColor: '#F5FCFF',
+    padding: 20,
+  },
+  title: {
+    fontSize: 40,
+    textAlign: 'center',
+    margin: 10,
+    fontFamily: 'monospace'
+  },
+  link: {
+    textAlign: 'center',
+    color: 'blue',
+  },
+  picker: {
+    width: 300,
+  }
+})
+
 export default class App extends Component {
-  state = { permission: '', lat: '', long: '', alt: '', sunrise: '', today: moment().format() }
+  state = { permission: '', lat: '', long: '', alt: '', sunrise: '', today: moment().format(), selection: "" }
 
   componentDidMount() {
+    AppState.addEventListener('change', this.handleAppStateChange)
     this.getPosition()
   }
-  
+
+  componentWillUnmount() {
+    AppState.removeEventListener('change', this.handleAppStateChange)
+  }
+
+  handleAppStateChange =  (appState ) => {
+    if(appState === 'background') {
+      PushNotification.localNotificationSchedule({
+        //... You can use all the options from localNotifications
+        message: "My Notification Message", // (required)
+        date: new Date(Date.now() + (5 * 1000)) // in 5 secs
+      })
+    }
+  }
+
   getPosition = () => {
     Permissions.request('location').then(response => {
       this.setState({ permission: response })
@@ -63,7 +103,6 @@ export default class App extends Component {
       let mytime = moment( mystr, 'YYYY-MM-DD hh:mm:ss A')
       mytime = moment( mytime ).subtract(offsetInHours, 'hours')
       setdate = moment( mytime ).format('YYYY-MM-DD hh:mm:ss A')
-      //then go ahead and set up the alarm clock
     }
     return (
       <View style={ styles.container }>
@@ -75,35 +114,24 @@ export default class App extends Component {
           </Text>
         </View>
         <View style= { styles.container }>
+          <Picker style={ styles.picker }
+                  selectedValue={ this.state.selection }
+                  onValueChange={(selection) => this.setState({selection})} >
+            <Picker.Item label="Check for sunrise alarm" value="check" />
+            <Picker.Item label="Set a new sunrise alarm" value="set" />
+            <Picker.Item label="Delete sunrise alarm" value="delete" />
+          </Picker>
+          
           <Button title="Get sunrise time" onPress={() => this.getSunriseTime(Number(lat).toFixed(7), Number(long).toFixed(7) ) } />
           { sunrise !== '' ?
             <Text>{`Sunrise time to set: ${ setdate }`}</Text>
           : null  
           }
+
         </View>
         <Example />
+        <PushController />
       </View>
     )
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignContent: 'space-between',
-    backgroundColor: '#F5FCFF',
-    padding: 20,
-  },
-  title: {
-    fontSize: 40,
-    textAlign: 'center',
-    margin: 10,
-    fontFamily: 'monospace'
-  },
-  link: {
-    textAlign: 'center',
-    color: 'blue',
-  },
-})
