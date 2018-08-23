@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Alert, Button, Linking, StyleSheet, Text, View, Picker } from 'react-native'
 import axios from 'react-native-axios'
+import BackgroundTimer from 'react-native-background-timer'
 import moment from 'moment'
 
 import Permissions from 'react-native-permissions'
@@ -28,9 +29,6 @@ const styles = StyleSheet.create({
     fontFamily: 'sans-serif-thin',
     padding: 40,
   },
-  text2: {
-    fontFamily: 'sans-serif-medium',
-  },
   picker: {
     width: 300,
     height: 50,
@@ -39,7 +37,7 @@ const styles = StyleSheet.create({
 })
 
 export default class App extends Component {
-  state = { permission: '', lat: '', long: '', alt: '', sunrise: '', selection: 'set', isSet: false }
+  state = { permission: '', lat: '', long: '', alt: '', sunrise: '', selection: 'set', isSet: false, isAlarm: false }
 
   componentDidMount() {
     this.getPosition()
@@ -65,16 +63,35 @@ export default class App extends Component {
   }
 
   handleSetter = ( setdate ) => {
+    const timer = BackgroundTimer.setTimeout(() => {
+      // this will be executed once after 10 seconds
+      // even when app is the the background
+      this.setState({ isAlarm: true })
+      this.makeNoise()
+    }, 10000)
 
-    //Code here
-    Alert.alert(
-      'Sunrise alarm set!',
-      'Please leave the program running in the background to make sure it works.',
-      [
-        { text: 'Ok', onPress: () => null },
-      ]
-    )
     this.setState({ isSet: true, sunrise: '' })
+  }
+
+  makeNoise = () => {
+    let Sound = require('react-native-sound')
+    Sound.setCategory('Playback')
+    let s = new Sound('s.mp3', Sound.MAIN_BUNDLE, (error) => {
+      if (error) {
+        console.log('failed to load the sound', error)
+        return
+      } else {
+        s.play((success) => {
+          if (success) {
+            console.log('played it!')
+          } else {
+            console.log('playback failed.')
+            s.reset()
+          }
+        })
+      }
+      console.log('duration in seconds: ' + Number(s.getDuration()).toFixed(3) + ' ')
+    })
   }
 
   getPosition = () => {
