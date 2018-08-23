@@ -31,10 +31,23 @@ allprojects {
     }
 }
 
-ext {
-    buildToolsVersion = "26.0.3"
-    minSdkVersion = 16
-    compileSdkVersion = 26
-    targetSdkVersion = 26
-    supportLibVersion = "26.1.0"
+subprojects {
+    afterEvaluate {project ->
+        if (project.hasProperty("android")) {
+            android {
+                compileSdkVersion 28
+                buildToolsVersion '25.0.0'
+            }
+        }
+    }
 }
+
+ext {
+    googlePlayServicesVersion = "+" // default: "+"
+    compileSdkVersion = 28// default: 23
+    buildToolsVersion = '25.0.0' // default: "23.0.1"
+    targetSdkVersion = 25 // default: 23
+    supportLibVersion = '25.0.0' // default: 23.1.1
+    minSdkVersion = 25
+}
+

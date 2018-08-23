@@ -137,10 +137,7 @@ android {
 }
 
 dependencies {
-    compile ('com.google.android.gms:play-services-gcm:8.1.0') {
-        force = true;
-    }
-    compile project(':react-native-push-notification')
+    compile project(':react-native-sound')
     compile fileTree(dir: "libs", include: ["*.jar"])
     compile "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
     compile "com.facebook.react:react-native:+"  // From node_modules
@@ -152,14 +149,4 @@ dependencies {
 task copyDownloadableDepsToLibs(type: Copy) {
     from configurations.compile
     into 'libs'
-}
-
-ext {
-    googlePlayServicesVersion = "+" // default: "+"
-
-    // Other settings
-    compileSdkVersion = 23// default: 23
-    buildToolsVersion = "23.0.1" // default: "23.0.1"
-    targetSdkVersion = 23 // default: 23
-    supportLibVersion = "23.1.1" // default: 23.1.1
 }

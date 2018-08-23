@@ -1,10 +1,8 @@
 import React, { Component } from 'react'
-import { Alert, Button, Linking, StyleSheet, Text, View, Picker, PushNotificationIOS } from 'react-native'
+import { Alert, Button, Linking, StyleSheet, Text, View, Picker } from 'react-native'
 import axios from 'react-native-axios'
-import Example from '../myLocation/components/Example.js'
 import moment from 'moment'
-import PushController from '../myLocation/components/PushController.js'
-import PushNotification from 'react-native-push-notification'
+
 import Permissions from 'react-native-permissions'
 
 const styles = StyleSheet.create({
@@ -14,7 +12,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignContent: 'center',
     backgroundColor: '#F5FCFF',
-    padding: 20,
+    padding: 40,
   },
   title: {
     fontSize: 40,
@@ -26,14 +24,22 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: 'blue',
   },
+  text: {
+    fontFamily: 'sans-serif-thin',
+    padding: 40,
+  },
+  text2: {
+    fontFamily: 'sans-serif-medium',
+  },
   picker: {
     width: 300,
     height: 50,
+    padding: 40,
   }
 })
 
 export default class App extends Component {
-  state = { permission: '', lat: '', long: '', alt: '', sunrise: '', selection: 'set' }
+  state = { permission: '', lat: '', long: '', alt: '', sunrise: '', selection: 'set', isSet: false }
 
   componentDidMount() {
     this.getPosition()
@@ -45,27 +51,30 @@ export default class App extends Component {
         this.getSunriseTime( lat, long )
         break
       case 'delete':
-        PushNotification.cancelAllLocalNotifications()
         Alert.alert(
-          'Really delete?',
-          'This will disable any alarms set by this app. Continue?',
+          '',
+          'This will disable any alarms set by this app.',
           [
-            { text: 'Continue', onPress: () => console.log("Continue") },
-            { text: 'Cancel', onPress: () => console.log("Cancel"), style: 'cancel' }
+            { text: 'Ok', onPress: () => null },
           ]
         )
-        break
+        //more code
       default:
         console.log("default selection")
     }
   }
 
   handleSetter = ( setdate ) => {
-    console.log(`Setdate received is ${setdate}`)
-    PushNotification.localNotificationSchedule({
-      message: "The sun is rising, it's time to wake up!",
-      date: new Date(setdate)
-    })
+
+    //Code here
+    Alert.alert(
+      'Sunrise alarm set!',
+      'Please leave the program running in the background to make sure it works.',
+      [
+        { text: 'Ok', onPress: () => null },
+      ]
+    )
+    this.setState({ isSet: true, sunrise: '' })
   }
 
   getPosition = () => {
@@ -106,7 +115,7 @@ export default class App extends Component {
   }
 
   render() {
-    const { lat, long, selection, sunrise } = this.state
+    const { lat, long, selection, sunrise, isSet } = this.state
     let offsetInHours = new Date().getTimezoneOffset() / 60
     let setdate = moment( new Date() ).add( 1, 'days' )
     let datestr = moment( setdate ).format("YYYY-MM-DD")
@@ -114,11 +123,13 @@ export default class App extends Component {
       let mystr = `${datestr} ${sunrise}`
       let mytime = moment( mystr, 'YYYY-MM-DD hh:mm:ss A')
       mytime = moment( mytime ).subtract(offsetInHours, 'hours')
-      setdate = moment( mytime ).toISOString()
-      console.log(setdate)
+      //setdate = moment( mytime ).toISOString()
+      setdate = moment(new Date()).add(10, 'seconds').toISOString()
+      setdate = moment( setdate ).toISOString()
     }
     return (
       <View style={ styles.container }>
+        <Text style={ styles.text }>{`Alarm set: ${isSet}` }</Text>
         { sunrise === '' ?
         <View>
           <View>
@@ -140,12 +151,10 @@ export default class App extends Component {
         </View>
         :
         <View>
-          <Text>The next sunrise is at: { setdate }</Text>
+          <Text style={ styles.text }>The next sunrise is at: { setdate }</Text>
           <Button title="Set alarm" onPress={() => this.handleSetter( setdate )} />
         </View> 
         }
-      <PushController />
-      
       </View>
     )
   }
