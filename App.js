@@ -1,9 +1,8 @@
 import React, { Component } from 'react'
-import { Alert, Button, Linking, StyleSheet, Text, View } from 'react-native'
+import { Alert, Animated, Button, Image, Linking, StyleSheet, Text, View } from 'react-native'
 import axios from 'react-native-axios'
 import BackgroundTimer from 'react-native-background-timer'
 import moment from 'moment'
-
 import Permissions from 'react-native-permissions'
 
 const styles = StyleSheet.create({
@@ -33,7 +32,11 @@ const styles = StyleSheet.create({
     width: 300,
     height: 50,
     padding: 40,
-  }
+  },
+  image: {
+    height: 200,
+    width: 200
+  },
 })
 
 export default class App extends Component {
@@ -46,7 +49,9 @@ export default class App extends Component {
             setDate: moment(), 
             timer: {}, 
             music: {}, 
-            isPlaying: false }
+            isPlaying: false,
+            firstLoad: true,
+           }
 
   componentDidMount() {
     this.getPosition()
@@ -65,7 +70,7 @@ export default class App extends Component {
     }, ms)
     this.setState({ isSet: true, showAlarm: true, timer: timer })
     Alert.alert(
-      'Sunrise alarm set',
+      'Sunrise alarm set for:',
       `${moment(setDate).format('MMMM Do YYYY, h:mm:ss a')}`,
       [
         { text: 'OK', onPress: () => null },
@@ -124,9 +129,7 @@ export default class App extends Component {
         let dateStr = moment(setDate).format("YYYY-MM-DD")
         let myStr = `${dateStr} ${ res.data.results.sunrise }`
         let myMoment = moment( myStr, "YYYY-MM-DD hh:mm:ss A")
-        console.log(moment(myMoment).format())
         let myTime = moment(myMoment).subtract(offsetInHours, 'hours')
-        console.log(moment(myTime).format())
         this.setState({ setDate: myTime })
         this.setAlarm( myTime )
     })
@@ -148,7 +151,7 @@ export default class App extends Component {
       '',
       'Good morning!',
       [
-        { text: '', onPress: () => null },
+        { text: 'Ok', onPress: () => null, style: 'cancel' },
       ],
       { cancelable: false }
     )
@@ -172,12 +175,12 @@ export default class App extends Component {
         </View>
 
         { showAlarm === false ?
-            <Button title="Set a sunrise alarm" onPress={() => this.setSunriseAlarm(Number(lat).toFixed(7), Number(long).toFixed(7))} />
+            <Button title="Set a sunrise alarm" color="green" onPress={() => this.setSunriseAlarm(Number(lat).toFixed(7), Number(long).toFixed(7))} />
         :
         <View>
             <Text>{`Alarm set for ${moment(setDate).format('MMMM Do YYYY, h:mm:ss a') }`}</Text>
           <Button title="Disable the alarm" onPress={() => this.cancelAlarm( timer, music, isPlaying )} />
-          { isPlaying ? <Text>The alarm is currently playing</Text> : null }
+          { isPlaying ? <TouchableOpacity>The alarm is currently playing</TouchableOpacity> : null }
         </View>
 
         }
